@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flexbox Simulator</title>
+<!-- Font Awesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    * {
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        overflow-x: auto; 
+        min-width: max-content;
+        background-color: black;
+    }
+    .left-column {
+        flex: 0 0 75vw;
+        background: #000000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 10px;
+        min-width: 75vw;
+        position: relative; 
+    }
+    .title-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+        margin-top: 20px;
+        margin-bottom: 40px;
+    }
+    .title {
+        font-size: 2.5em;
+        font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        font-weight: bold;
+        color: white;
+    }
+    .icon-selector {
+        display: flex;
+        gap: 10px;
+    }
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        background-color: #666;
+        border: 2px solid #666;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        user-select: none;
+    }
+    .icon-box span {
+        font-size: 0.6em;
+        color: white;
+        margin-top: 5px;
+    }
+    .icon-box.selected {
+        background-color: #ffd700;
+        border-color: #ffd700;
+    }
+    .icon-box.selected span {
+        color: black;
+    }
+    .icon-box i {
+        font-size: 1.5em;
+        color: white;
+        transition: color 0.3s ease;
+    }
+    .icon-box.selected i {
+        color: #333;
+    }
+    .canvas {
+        background: white;
+        border: 1px solid #ccc;
+        width: 50%;
+        height: 70%;
+        display: block;
+        padding: 0;
+        margin: 0;
+        gap: 0;
+        overflow: visible;
+        min-width: 0;
+        min-height: 0;
+        flex-shrink: 0;
+        position: relative;
+    }
+    .canvas .box {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+        font-size: 1.2em;
+        color: white;
+        margin: 0;
+        padding: 0;
+        flex-shrink: 0;
+    }
+    .right-column {
+        flex: 0 0 25vw;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 6px;
+        background: #b6a1a1;
+        min-width: 25vw;
+        margin-left: auto;
+        max-width: 25vw;
+    }
+    .right-column h4 {
+        font-size: 0.9em;
+        color: #333;
+        background-color: yellow;
+        padding: 10px 5px;
+        text-align: center;
+        border-radius: 8px;
+        width: 90%;
+    }
+    h2 {
+        margin: 2px 0 15px 0;
+        font-size: 1em;
+    }
+    .control-panel, .square-panel {
+        border: 1px solid #ccc;
+        background: white;
+        border-radius: 4px;
+        padding: 6px;
+        margin-bottom: 6px;
+        width: 90%;
+        max-width: none;
+        box-sizing: border-box;
+    }
+    .control-panel select,
+    .square-panel input,
+    .square-panel select {
+        margin: 2px;
+        font-size: 0.85em;
+        max-width: 90%;
+    }
+    .flex-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 6px;
+    }
+    .flex-row label {
+        margin-right: 2px;
+        font-size: 0.8em;
+    }
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 40px;
+        height: 20px;
+    }
+    .switch input {display:none;}
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 20px;
+    }
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+    input:checked + .slider {
+        background-color: #2196F3;
+    }
+    input:checked + .slider:before {
+        transform: translateX(20px);
+    }
+    .square-controls-header {
+        display: flex;
+        justify-content: flex-start;
+        margin-bottom: 6px;
+        gap: 6px;
+    }
+    .square-controls-header button {
+        font-size: 0.8em;
+        padding: 3px 8px;
+    }
+    .square-list {
+        max-height: 160px;
+        overflow-y: auto;
+    }
+    .square-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 3px;
+        flex-wrap: wrap;
+    }
+    .square-row input[type="number"] {
+        width: 60px;
+        font-size: 0.8em;
+    }
+    .square-row input[type="color"] {
+        width: 25px;
+        height: 25px;
+        padding: 0;
+        border: none;
+        background: none;
+        cursor: pointer;
+        margin-left: 4px;
+        margin-right: 2px;
+    }
+    .square-row button {
+        margin-left: 2px;
+        font-size: 0.75em;
+        padding: 1px 4px;
+    }
+    .square-row label {
+        font-size: 0.75em;
+        margin-right: 1px;
+    }
+    .square-number {
+        font-weight: bold;
+        color: #333;
+        margin-right: 20px;
+    }
+    .square-dimension-label {
+        color: #666;
+        margin-right: 2px;
+    }
+</style>
+</head>
+<body>
+<div class="left-column">
+    <div class="title-container">
+        <div class="title">FLEXBOX SIMULATOR</div>
+        <div class="icon-selector">
+            <div class="icon-box" id="icon-horizontal" title="Dirección horizontal">
+                <i class="fas fa-arrows-alt-h"></i>
+                <span>ROW</span>
+            </div>
+            <div class="icon-box" id="icon-vertical" title="Dirección vertical">
+                <i class="fas fa-arrows-alt-v"></i>
+                <span>COLUMN</span>
+            </div>
+            <div class="icon-box" id="icon-wrap" title="Flex wrap">
+                <i class="fas fa-th"></i>
+                <span>WRAP</span>
+            </div>
+        </div>
+    </div>
+    <div class="canvas" id="canvas"></div>
+</div>
+<div class="right-column">
+    <h4>Simulador creado por Antonio González</h4>
+    <div class="control-panel">
+        <h2>Propiedades Flexbox</h2>
+        <div class="flex-row">
+            <label>Display flex:</label>
+            <label class="switch">
+                <input type="checkbox" id="toggle-flex">
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="flex-row">
+            <label for="flex-direction">flex-direction:</label>
+            <select id="flex-direction" disabled>
+                <option value="" selected>Default (row)</option>
+                <option>row</option>
+                <option>row-reverse</option>
+                <option>column</option>
+                <option>column-reverse</option>
+            </select>
+        </div>
+        <div class="flex-row">
+            <label for="justify-content">justify-content:</label>
+            <select id="justify-content" disabled>
+                <option value="" selected>Default (start)</option>
+                <option>start</option>
+                <option>end</option>
+                <option>center</option>
+                <option>space-between</option>
+                <option>space-around</option>
+                <option>space-evenly</option>
+            </select>
+        </div>
+        <div class="flex-row">
+            <label for="align-items">align-items:</label>
+            <select id="align-items" disabled>
+                <option value="" selected>Default (start)</option>
+                <option>stretch</option>
+                <option>start</option>
+                <option>end</option>
+                <option>center</option>
+                <option>baseline</option>
+            </select>
+        </div>
+        <div class="flex-row">
+            <label for="align-content">align-content:</label>
+            <select id="align-content" disabled>
+                <option value="" selected>Default (stretch)</option>
+                <option>stretch</option>
+                <option>start</option>
+                <option>end</option>
+                <option>center</option>
+                <option>space-between</option>
+                <option>space-around</option>
+            </select>
+            <i class="fas fa-th fa-sm" style="padding:5px;color:#7a99ab;"></i>
+        </div>
+        <div class="flex-row">
+            <label for="flex-wrap">flex-wrap:</label>
+            <select id="flex-wrap" disabled>
+                <option value="" selected>Default (nowrap)</option>
+                <option>nowrap</option>
+                <option>wrap</option>
+                <option>wrap-reverse</option>
+            </select>
+            <i class="fas fa-th fa-sm" style="padding:5px;color:#7a99ab;"></i>
+        </div>
+        <button id="reset-flex">Reset</button>
+    </div>
+
+    <div class="square-panel">
+        <h2>Elementos Hijo</h2>
+        <div class="square-controls-header">
+            <button id="add-square">Nuevo</button>
+            <button id="clear-squares">Limpiar</button>
+        </div>
+        <div class="square-list" id="square-list"></div>
+    </div>
+</div>
+
+<script>
+// Referencias a los elementos
+const canvas = document.getElementById('canvas');
+const toggleFlex = document.getElementById('toggle-flex');
+const selects = document.querySelectorAll('.control-panel select');
+const resetButton = document.getElementById('reset-flex');
+const addSquareButton = document.getElementById('add-square');
+const clearSquaresButton = document.getElementById('clear-squares');
+const squareList = document.getElementById('square-list');
+
+// Referencias a los botones de iconos
+const iconHorizontal = document.getElementById('icon-horizontal');
+const iconVertical = document.getElementById('icon-vertical');
+const iconWrap = document.getElementById('icon-wrap');
+
+// Función para actualizar el estado de los botones según los controles
+function updateIconButtons() {
+    const isFlexEnabled = toggleFlex.checked;
+    const flexDirection = document.getElementById('flex-direction').value;
+    const flexWrap = document.getElementById('flex-wrap').value;
+    
+    // Si display flex no está activado, desactivar todos los botones
+    if (!isFlexEnabled) {
+        iconHorizontal.classList.remove('selected');
+        iconVertical.classList.remove('selected');
+        iconWrap.classList.remove('selected');
+        return;
+    }
+    
+    // Lógica para botón ROW (horizontal)
+    const isRowDirection = flexDirection === '' || flexDirection === 'row' || flexDirection === 'row-reverse';
+    if (isRowDirection) {
+        iconHorizontal.classList.add('selected');
+        iconVertical.classList.remove('selected');
+    } else {
+        iconHorizontal.classList.remove('selected');
+    }
+    
+    // Lógica para botón COLUMN (vertical)
+    const isColumnDirection = flexDirection === 'column' || flexDirection === 'column-reverse';
+    if (isColumnDirection) {
+        iconVertical.classList.add('selected');
+        iconHorizontal.classList.remove('selected');
+    } else if (!isRowDirection) {
+        iconVertical.classList.remove('selected');
+    }
+    
+    // Lógica para botón WRAP
+    const isWrapEnabled = flexWrap === 'wrap' || flexWrap === 'wrap-reverse';
+    if (isWrapEnabled) {
+        iconWrap.classList.add('selected');
+    } else {
+        iconWrap.classList.remove('selected');
+    }
+}
+
+// Función para manejar clicks en los botones de iconos
+function handleIconClick(iconElement, selectId, values) {
+    if (!toggleFlex.checked) {
+        return; // No hacer nada si flex no está activado
+    }
+    
+    const select = document.getElementById(selectId);
+    const isSelected = iconElement.classList.contains('selected');
+    
+    if (isSelected) {
+        // Si está seleccionado, desactivarlo (volver al default)
+        select.value = '';
+    } else {
+        // Si no está seleccionado, activarlo con el primer valor
+        select.value = values[0];
+    }
+    
+    // Disparar el evento change para aplicar los estilos
+    select.dispatchEvent(new Event('change'));
+}
+
+// Event listeners para los botones de iconos
+iconHorizontal.addEventListener('click', () => {
+    handleIconClick(iconHorizontal, 'flex-direction', ['row']);
+});
+
+iconVertical.addEventListener('click', () => {
+    handleIconClick(iconVertical, 'flex-direction', ['column']);
+});
+
+iconWrap.addEventListener('click', () => {
+    handleIconClick(iconWrap, 'flex-wrap', ['wrap']);
+});
+
+// Función para ajustar el layout cuando hay desbordamiento
+function adjustLayoutForOverflow() {
+    const canvas = document.getElementById('canvas');
+    const rightColumn = document.querySelector('.right-column');
+    const leftColumn = document.querySelector('.left-column');
+    const body = document.body;
+    
+    if (canvas.style.display === 'flex') {
+        const boxes = canvas.querySelectorAll('.box');
+        let totalWidth = 0;
+        
+        boxes.forEach(box => {
+            totalWidth += parseInt(box.style.width) || 100;
+        });
+        
+        const canvasRect = canvas.getBoundingClientRect();
+        const rightColumnRect = rightColumn.getBoundingClientRect();
+        const overflow = totalWidth - canvasRect.width;
+        
+        if (overflow > 0) {
+            const canvasLeft = canvasRect.left;
+            const overflowEndPosition = canvasLeft + totalWidth;
+            const rightColumnStart = rightColumnRect.left;
+            if (overflowEndPosition >= (rightColumnStart - 80)) {
+                const displacement = overflowEndPosition - rightColumnStart + 100;
+                body.style.minWidth = `calc(100vw + ${displacement}px)`;
+                rightColumn.style.marginLeft = `${displacement}px`;
+            } else {
+                body.style.minWidth = '100vw';
+                rightColumn.style.marginLeft = 'auto';
+            }
+        } else {
+            body.style.minWidth = '100vw';
+            rightColumn.style.marginLeft = 'auto';
+        }
+    } else {
+        body.style.minWidth = '100vw';
+        rightColumn.style.marginLeft = 'auto';
+    }
+}
+
+canvas.style.display = 'block';
+canvas.style.gap = '0';
+canvas.style.padding = '0';
+canvas.style.margin = '0';
+
+toggleFlex.addEventListener('change', () => {
+    canvas.style.display = toggleFlex.checked ? 'flex' : 'block';
+    selects.forEach(select => select.disabled = !toggleFlex.checked);
+    updateIconButtons(); // Actualizar botones cuando cambia el toggle
+    setTimeout(adjustLayoutForOverflow, 10);
+});
+
+selects.forEach(select => {
+    select.addEventListener('change', () => {
+        canvas.style[select.id] = select.value || '';
+        updateIconButtons(); // Actualizar botones cuando cambia cualquier select
+        setTimeout(adjustLayoutForOverflow, 10);
+    });
+});
+
+resetButton.addEventListener('click', () => {
+    toggleFlex.checked = false;
+    canvas.style.display = 'block';
+    selects.forEach(select => {
+        select.value = "";
+        select.disabled = true;
+        canvas.style[select.id] = '';
+    });
+    updateIconButtons(); // Actualizar botones después del reset
+    adjustLayoutForOverflow();
+});
+
+let squareCount = 0;
+const usedColors = new Set();
+
+function getRandomColor() {
+    let color;
+    do {
+        color = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+    } while (usedColors.has(color));
+    usedColors.add(color);
+    return color;
+}
+
+addSquareButton.addEventListener('click', () => {
+    squareCount++;
+
+    const square = document.createElement('div');
+    square.className = 'box';
+    square.style.width = '100px';
+    square.style.height = '100px';
+
+    const color = getRandomColor();
+    square.style.background = color;
+    square.textContent = squareCount;
+
+    canvas.appendChild(square);
+    setTimeout(adjustLayoutForOverflow, 10);
+
+    const row = document.createElement('div');
+    row.className = 'square-row';
+    row.innerHTML = `
+        <span class="square-number">#${squareCount}</span>
+        <label class="square-dimension-label">W:</label>
+        <input type="number" value="100" min="10" max="500" step="1" class="width-input" data-index="${squareCount-1}">
+        <label class="square-dimension-label">H:</label>
+        <input type="number" value="100" min="10" max="500" step="1" class="height-input" data-index="${squareCount-1}">
+        <input type="color" value="${color}" class="color-input" data-index="${squareCount-1}">
+        <i class="remove-square fa-solid fa-trash-can" style="padding:5px;color:#7a99ab" data-index="${squareCount-1}"></i>
+    `;
+    squareList.appendChild(row);
+
+    const widthInput = row.querySelector('.width-input');
+    const heightInput = row.querySelector('.height-input');
+    const colorInput = row.querySelector('.color-input');
+    const removeBtn = row.querySelector('.remove-square');
+
+    widthInput.addEventListener('input', () => {
+        let val = parseInt(widthInput.value);
+        if (isNaN(val) || val < 0) val = 0;
+        if (val > 500) val = 500;
+        widthInput.value = val;
+        square.style.width = val + 'px';
+        setTimeout(adjustLayoutForOverflow, 10);
+    });
+    heightInput.addEventListener('input', () => {
+        let val = parseInt(heightInput.value);
+        if (isNaN(val) || val < 0) val = 0;
+        if (val > 500) val = 500;
+        heightInput.value = val;
+        square.style.height = val + 'px';
+        setTimeout(adjustLayoutForOverflow, 10);
+    });
+    colorInput.addEventListener('input', () => {
+        square.style.background = colorInput.value;
+    });
+    removeBtn.addEventListener('click', () => {
+        canvas.removeChild(square);
+        squareList.removeChild(row);
+        usedColors.delete(color);
+        setTimeout(adjustLayoutForOverflow, 10);
+    });
+});
+
+clearSquaresButton.addEventListener('click', () => {
+    canvas.innerHTML = '';
+    squareList.innerHTML = '';
+    squareCount = 0;
+    usedColors.clear();
+    setTimeout(adjustLayoutForOverflow, 10);
+});
+
+// Inicializar el estado de los botones
+updateIconButtons();
+</script>
+</body>
+</html>
